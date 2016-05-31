@@ -14,27 +14,45 @@ const (
 )
 
 
-type nulling struct{
-	NullProbability int
-	NullPresentation string
+type Nulling struct{
+	probability float32
+	presentation string
 }
-type formatting struct {
-	Locale string
-	format string
+func NewNullingExt(probability float32, presentation string) (Nulling){
+	//TODO: check parameters
+	return Nulling{
+		probability: probability,
+		presentation: presentation,
+	}
+}
+func NewNulling(probability float32) (Nulling){
+	return NewNullingExt(probability,"");
 }
 
-type randomizing struct {
-	RandomTypeValue RandomType
+type Formatting struct {
+	format string
+	locale string
 }
-type cycling struct  {
-	cycle bool
+func NewFormattingExt(format, locale string) (Formatting){
+	//TODO: check parameters
+	return Formatting{
+		format: format,
+		locale: locale,
+	}
+}
+func NewFormatting(format string) (Formatting){
+	return NewFormattingExt(format,"")
+}
+
+type Randomizing struct {
+	RandomTypeValue RandomType
 }
 
 type bound struct {
-	nulling nulling
-	formatting formatting
-	randomizing randomizing
-	cycling
+	Nulling Nulling
+	Formatting Formatting
+	randomizing Randomizing
+	cyclic bool
 	lowerBound interface{}
 	upperBound interface{}
 	initial interface{}
@@ -61,11 +79,11 @@ type Producer interface {
 func(bound *bound) Reset() {
 	bound.current = nil;
 }
-func(bound bound) isCyclic() (bool) {
-	return bound.cycle == true;
+func(bound bound) IsRandom() (bool) {
+	return bound.randomizing.RandomTypeValue != NONE;
 }
-func(bound bound) isRandom() (bool) {
-	return bound.randomizing.RandomTypeValue == true;
+func(bound bound) IsCyclic() (bool) {
+	return bound.cyclic;
 }
 func (bound bound) doStep() (interface{}) {
 	panic("Abstract doStep has been called")
@@ -73,13 +91,13 @@ func (bound bound) doStep() (interface{}) {
 func (bound bound) doRandom() (interface{}) {
 	panic("Abstract doRandom has been called")
 }
-func (bound bound) isBoundExceeded() {
+func (bound bound) isBoundExceeded() (bool){
 	panic("Abstract isBoundExceeded has been called")
 }
 
 func(bound *bound) NextValue() (DataPair) {
 	var result DataPair;
-	if bound.isRandom() {
+	if bound.IsRandom() {
 		bound.current = bound.doRandom();
 	} else {
 		if bound == nil {
@@ -88,8 +106,8 @@ func(bound *bound) NextValue() (DataPair) {
 			bound.current = bound.doStep();
 		}
 
-		if  bound.isBoundExceeded (){
-			if bound.isCyclic() {
+		if  bound.isBoundExceeded() {
+			if bound.IsCyclic() {
 				bound.Reset()
 				result = bound.NextValue();
 			} else {
@@ -100,10 +118,10 @@ func(bound *bound) NextValue() (DataPair) {
 	}
 
 	if result.RawValue != nil {
-		if _,ok := result.RawValue.(string); ok {
-			result.StringValue = result.RawValue
+		if str ,ok := result.RawValue.(string); ok {
+			result.StringValue = str;
 		} else {
-			result.StringValue = fmt.Sprintf(bound.formatting.format,result.RawValue)
+			result.StringValue = fmt.Sprintf(bound.Formatting.format,result.RawValue)
 		}
 	}
 	return result;
@@ -111,9 +129,14 @@ func(bound *bound) NextValue() (DataPair) {
 type BoundInt64 struct{
 	bound bound;
 }
+type BoundInt64I interface {
+	Producer
+}
 
 func (boundInt64 BoundInt64) doStep() (interface{})  {
-	return boundInt64.bound.current + boundInt64.bound.step
+	current := boundInt64.bound.current.(int64);
+	step := boundInt64.bound.step.(int64);
+	return current + step;
 }
 func (boundInt64 BoundInt64) doRandom() (interface{})  {
 	return boundInt64.bound.lowerBound + rand.Int63n(boundInt64.bound.upperBound - boundInt64.bound.lowerBound)
@@ -123,3 +146,32 @@ func (boundInt64 BoundInt64) isBoundExceeded() (bool)  {
 		(boundInt64.bound.step < 0 && boundInt64.bound.current >boundInt64.bound.upperBound);
 }
 
+func NewBoundInt64Sequential(lowerBound, upperBound, step, initialValue int64, cyclic bool) (error,*BoundInt64)  {
+	//TODO: check parameters
+	return &BoundInt64{
+		bound.lowerBound : lowerBound,
+		bound.upperBound : upperBound,
+		bound.initial : initialValue,
+		bound.step : step,
+		bound.Formatting : NewFormatting("%v"),
+		bound.Nulling : NewNulling(0),
+		bound.cyclic : cyclic,
+		bound.randomizing.RandomTypeValue : NONE,
+	}
+
+}
+
+func NewBoundInt64Random(lowerBound, upperBound int64, randomizing Randomizing) (error, *BoundInt64)  {
+	//TODO: check parameters
+	return &BoundInt64{
+		bound.lowerBound : lowerBound,
+		bound.upperBound : upperBound,
+		bound.initial : nil,
+		bound.step : nil,
+		bound.Formatting : NewFormatting("%v"),
+		bound.Nulling : NewNulling(0),
+		bound.cyclic : false,
+		bound.randomizing : randomizing,
+	}
+
+}
