@@ -30,7 +30,7 @@ type cycling struct  {
 	cycle bool
 }
 
-type Bound struct {
+type bound struct {
 	nulling nulling
 	formatting formatting
 	randomizing randomizing
@@ -58,26 +58,26 @@ type Producer interface {
 	doRandom() (interface{})
 	isBoundExceeded (bool)
 }
-func(bound *Bound) Reset() {
+func(bound *bound) Reset() {
 	bound.current = nil;
 }
-func(bound Bound) isCyclic() (bool) {
+func(bound bound) isCyclic() (bool) {
 	return bound.cycle == true;
 }
-func(bound Bound) isRandom() (bool) {
+func(bound bound) isRandom() (bool) {
 	return bound.randomizing.RandomTypeValue == true;
 }
-func (bound Bound) doStep() (interface{}) {
+func (bound bound) doStep() (interface{}) {
 	panic("Abstract doStep has been called")
 }
-func (bound Bound) doRandom() (interface{}) {
+func (bound bound) doRandom() (interface{}) {
 	panic("Abstract doRandom has been called")
 }
-func (bound Bound) isBoundExceeded() {
+func (bound bound) isBoundExceeded() {
 	panic("Abstract isBoundExceeded has been called")
 }
 
-func(bound *Bound) NextValue() (DataPair) {
+func(bound *bound) NextValue() (DataPair) {
 	var result DataPair;
 	if bound.isRandom() {
 		bound.current = bound.doRandom();
@@ -109,7 +109,7 @@ func(bound *Bound) NextValue() (DataPair) {
 	return result;
 }
 type BoundInt64 struct{
-	bound Bound;
+	bound bound;
 }
 
 func (boundInt64 BoundInt64) doStep() (interface{})  {
