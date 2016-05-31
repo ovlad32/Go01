@@ -35,10 +35,10 @@ type Bound struct {
 	formatting formatting
 	randomizing randomizing
 	cycling
-	Lowerbound interface{}
-	Upperbound interface{}
-	Initital interface{}
-	Step interface{}
+	lowerBound interface{}
+	upperBound interface{}
+	initial interface{}
+	step interface{}
 	current interface{}
 }
 
@@ -83,7 +83,7 @@ func(bound *Bound) NextValue() (DataPair) {
 		bound.current = bound.doRandom();
 	} else {
 		if bound == nil {
-			bound.current = bound.Lowerbound
+			bound.current = bound.lowerBound
 		} else {
 			bound.current = bound.doStep();
 		}
@@ -113,12 +113,13 @@ type BoundInt64 struct{
 }
 
 func (boundInt64 BoundInt64) doStep() (interface{})  {
-	return boundInt64.bound.current + boundInt64.bound.Step
+	return boundInt64.bound.current + boundInt64.bound.step
 }
 func (boundInt64 BoundInt64) doRandom() (interface{})  {
-	return boundInt64.bound.Lowerbound + rand.Int63n(boundInt64.bound.Upperbound - boundInt64.bound.Lowerbound)
+	return boundInt64.bound.lowerBound + rand.Int63n(boundInt64.bound.upperBound - boundInt64.bound.lowerBound)
 }
-func (boundInt64 BoundInt64) isBoundExceded() (bool)  {
-	return (boundInt64.bound.Step > 0 && boundInt64.bound.current >boundInt64.bound.Upperbound) ||
-		(boundInt64.bound.Step < 0 && boundInt64.bound.current >boundInt64.bound.Upperbound);
+func (boundInt64 BoundInt64) isBoundExceeded() (bool)  {
+	return (boundInt64.bound.step > 0 && boundInt64.bound.current >boundInt64.bound.upperBound) ||
+		(boundInt64.bound.step < 0 && boundInt64.bound.current >boundInt64.bound.upperBound);
 }
+

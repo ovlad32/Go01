@@ -61,14 +61,16 @@ type Table struct {
 	keys    []*Constraint
 	refKeys []*Constraint
 }
-
+type ServerCredential struct{
+	login    string
+	password string
+}
 type Server struct {
 	stype    ServerType
 	name     string
-	url      string
 	driver   string
-	login    string
-	password string
+	url      string
+	cred     ServerCredential
 }
 
 func newTable(server *Server, owner string, name string) (err error, result Table) {
@@ -83,3 +85,19 @@ func newTable(server *Server, owner string, name string) (err error, result Tabl
 	}
 	return nil, result
 }
+func newServer(stype ServerType,name string, driver string, url string) (err error, result Server) {
+	result = Server{
+		stype : stype,
+		name:name,
+		driver:driver,
+		url:url,
+	}
+	return nil,result
+}
+
+func (server *Server) setCredential( cred ServerCredential) {
+	server.cred = cred
+}
+
+
+
