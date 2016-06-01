@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	_ "fmt"
 	"fmt"
 )
 
