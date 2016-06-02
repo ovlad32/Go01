@@ -77,6 +77,11 @@ type bound struct {
 	initial interface{}
 	step interface{}
 	current interface{}
+	GetLowerBound func() interface{}
+	GetUpperBound func() interface{}
+	DoStep func () interface{}
+	DoRandom func() interface{}
+	IsBoundExceeded  func() (bool)
 }
 
 func(bound *bound) Reset() {
@@ -89,27 +94,70 @@ func(bound bound) IsCyclic() (bool) {
 	return bound.cyclic;
 }
 func (bound *bound) doStep() (interface{}) {
-	panic("Abstract doStep has been called")
+	if bound.DoStep == nil {
+		panic("Abstract doStep has been called")
+	} else {
+		return  bound.DoStep()
+	}
 }
-func (bound *bound) doRandom() (interface{}) {
-	panic("Abstract doRandom has been called")
+func (bound *bound) doRandom()  interface {} {
+
+	if bound.DoRandom == nil {
+		panic("Abstract doRandom has been called")
+	} else {
+		return  bound.DoRandom()
+	}
 }
 func (bound *bound) isBoundExceeded() (bool){
-	panic("Abstract isBoundExceeded has been called")
+	if bound.IsBoundExceeded == nil {
+		panic("Abstract doRandom has been called")
+	} else {
+		return  bound.IsBoundExceeded()
+	}
+}
+func (bound *bound) getLowerBound() interface {} {
+	if bound.GetLowerBound == nil {
+		panic("Abstract GetLowerBound has been called")
+	} else {
+		return  bound.GetLowerBound()
+	}
+}
+func (bound *bound) getUpperBound() interface {}{
+	if bound.getUpperBound == nil {
+		panic("Abstract GetUpperBound has been called")
+	} else {
+		return  bound.getUpperBound()
+	}
+}
+func(bound bound) getLowerBoundDefault() interface{} {
+	return bound.lowerBound;
+}
+func(bound bound) getUpperBoundDefault() interface{} {
+	return bound.upperBound;
+}
+func (bound *bound) assignDefaultGetters() {
+	bound.GetLowerBound = bound.getLowerBoundDefault;
+	bound.GetUpperBound = bound.getUpperBoundDefault;
 }
 
-func(bound *bound) NextValue() (DataPair) {
+func (bound *bound) NextValue() (DataPair) {
 	var result DataPair;
 	if bound.IsRandom() {
-		bound.current = bound.doRandom();
+		if bound.DoRandom == nil {
+			bound.DoRandom();
+		}
+
 	} else {
-		if bound == nil {
+		if bound.current == nil {
 			bound.current = bound.lowerBound
 		} else {
 			bound.current = bound.doStep();
 		}
 
-		if  bound.isBoundExceeded() {
+
+		if  !bound.isBoundExceeded() {
+			result.RawValue = bound.current;
+		} else {
 			if bound.IsCyclic() {
 				bound.Reset()
 				result = bound.NextValue();
@@ -132,6 +180,7 @@ func(bound *bound) NextValue() (DataPair) {
 type BoundInt64 struct{
 	bound
 }
+
 
 
 func (boundInt64 *BoundInt64) doStep() (interface{})  {
@@ -160,6 +209,8 @@ func NewBoundInt64Sequential(lowerBound, upperBound, step, initial int64, cyclic
 	//TODO: check parameters
 
 	result := new(BoundInt64);
+	result.assignDefaultGetters();
+
 	result.lowerBound = lowerBound
 	result.upperBound = upperBound;
 	result.initial = initial;
@@ -168,6 +219,11 @@ func NewBoundInt64Sequential(lowerBound, upperBound, step, initial int64, cyclic
 	result.Nulling = NewNulling(0);
 	result.cyclic = cyclic;
 	result.RandomTypeValue = NONE
+
+	result.IsBoundExceeded = result.isBoundExceeded
+	result.DoStep = result.doStep
+	result.DoRandom = result.doRandom
+
 
 	return nil,result;
 

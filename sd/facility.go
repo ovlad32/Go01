@@ -21,6 +21,8 @@ func  Sd1()  {
 	_,prod := NewBoundInt64Sequential(1, 100, 1, 0, false);
 	dataPair := prod.NextValue();
 	fmt.Println(dataPair.StringValue);
+	dataPair = prod.NextValue();
+	fmt.Println(dataPair.StringValue);
 }
 
 
