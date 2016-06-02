@@ -8,6 +8,6 @@ import ("fmt"
 
 func main() {
 	fmt.Print("Go!")
-	sd.Start();
-	sd.Sd1();
+	//sd.Start();
+	sd.Sd2();
 }

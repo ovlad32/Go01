@@ -22,3 +22,49 @@ func  Sd1()  {
 	dataPair := prod.NextValue();
 	fmt.Println(dataPair.StringValue);
 }
+
+
+func Sd2() {
+	bb := new(B)
+	bb.overFunc = bb.Over;
+	bb.Call();
+
+}
+
+type A struct {
+	value int;
+	overFunc func()
+}
+
+type B struct {
+	A
+}
+
+type Aer interface {
+	Over()
+	Call()
+}
+
+func (a *A) Over()  {
+	a.value = 1;
+}
+
+func (a *A) Call()  {
+	if a.overFunc == nil{
+		panic("tada!")
+	} else {
+		a.overFunc()
+	}
+	fmt.Println(a.value)
+}
+
+type Ber interface {
+	Aer
+}
+
+func (b *B) Over()  {
+	b.value = 2;
+}
+
+
+
