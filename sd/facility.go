@@ -18,7 +18,7 @@ func DbInit(){
 }
 
 func  Sd1()  {
-	_,prod := NewBoundInt64Sequential(1, 100, 1, 0, false);
+	prod := NewSimpleInt64().SetLowerBound(5).SetUpperBound(1000).SetSequentialStep(1);
 	dataPair := prod.NextValue();
 	fmt.Println(dataPair.StringValue);
 	dataPair = prod.NextValue();

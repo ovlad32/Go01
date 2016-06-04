@@ -25,6 +25,7 @@ func NewNullingExt(probability float32, presentation string) (Nulling){
 		presentation: presentation,
 	}
 }
+
 func NewNulling(probability float32) (Nulling){
 	return NewNullingExt(probability,"");
 }
@@ -66,101 +67,98 @@ type Producer interface {
 	doRandom() (interface{})
 	isBoundExceeded (bool)
 }
+type Presentation struct{
+	NullProbability  int8
+	NullPresentation string
+	Format string
+}
 
-type bound struct {
-	Nulling
-	Formatting
-	Randomizing
-	cyclic bool
+type Simple struct {
+	Presentation
 	lowerBound interface{}
 	upperBound interface{}
 	initial interface{}
-	step interface{}
-	current interface{}
-	GetLowerBound func() interface{}
-	GetUpperBound func() interface{}
-	DoStep func () interface{}
-	DoRandom func() interface{}
-	IsBoundExceeded  func() (bool)
+	randomTypeValue RandomType
+	sequentialStep interface{}
+	currentValue interface{}
+	cyclic bool
+	//
+	doStepHandler func()
+	doRandomHandler func()
+	isBoundExceededHandler func() bool
+
+	getLowerBoundFunc func() (interface{})
+	getUpperBoundFunc func() (interface{})
 }
 
-func(bound *bound) Reset() {
-	bound.current = nil;
-}
-func(bound bound) IsRandom() (bool) {
-	return bound.RandomTypeValue != NONE;
-}
-func(bound bound) IsCyclic() (bool) {
-	return bound.cyclic;
-}
-func (bound *bound) doStep() (interface{}) {
-	if bound.DoStep == nil {
-		panic("Abstract doStep has been called")
-	} else {
-		return  bound.DoStep()
-	}
-}
-func (bound *bound) doRandom()  interface {} {
 
-	if bound.DoRandom == nil {
-		panic("Abstract doRandom has been called")
-	} else {
-		return  bound.DoRandom()
-	}
+func (simple *Simple) Reset() {
+	simple.currentValue = nil;
 }
-func (bound *bound) isBoundExceeded() (bool){
-	if bound.IsBoundExceeded == nil {
-		panic("Abstract doRandom has been called")
-	} else {
-		return  bound.IsBoundExceeded()
-	}
-}
-func (bound *bound) getLowerBound() interface {} {
-	if bound.GetLowerBound == nil {
-		panic("Abstract GetLowerBound has been called")
-	} else {
-		return  bound.GetLowerBound()
-	}
-}
-func (bound *bound) getUpperBound() interface {}{
-	if bound.getUpperBound == nil {
-		panic("Abstract GetUpperBound has been called")
-	} else {
-		return  bound.getUpperBound()
-	}
-}
-func(bound bound) getLowerBoundDefault() interface{} {
-	return bound.lowerBound;
-}
-func(bound bound) getUpperBoundDefault() interface{} {
-	return bound.upperBound;
-}
-func (bound *bound) assignDefaultGetters() {
-	bound.GetLowerBound = bound.getLowerBoundDefault;
-	bound.GetUpperBound = bound.getUpperBoundDefault;
+func(simple Simple) IsRandom() (bool) {
+	return simple.randomTypeValue != NONE;
 }
 
-func (bound *bound) NextValue() (DataPair) {
+func(simple Simple) IsCyclic() (bool) {
+	return simple.cyclic;
+}
+
+func (simple *Simple) doStep()  {
+	if simple.doStepHandler == nil {
+		panic("doStep handler has been defined")
+	} else {
+		simple.doStepHandler()
+	}
+}
+func (simple *Simple) doRandom() {
+
+	if simple.doRandomHandler == nil {
+		panic("doRandom handler has been defined")
+	} else {
+		simple.doRandomHandler()
+	}
+}
+func (simple Simple) isBoundExceeded() (bool){
+	if simple.isBoundExceededHandler == nil {
+		panic("isBoundExceeded handler has been defined")
+	} else {
+		return  simple.isBoundExceededHandler()
+	}
+}
+func (simple Simple) GetLowerBound() interface {} {
+	if simple.getLowerBoundFunc == nil {
+		return  simple.lowerBound
+	} else {
+		return  simple.getLowerBoundFunc()
+	}
+}
+func (simple Simple) GetUpperBound() interface {} {
+	if simple.getUpperBoundFunc == nil {
+		return  simple.upperBound
+	} else {
+		return  simple.getUpperBoundFunc()
+	}
+}
+
+
+func (simple *Simple) NextValue() (DataPair) {
 	var result DataPair;
-	if bound.IsRandom() {
-		if bound.DoRandom == nil {
-			bound.DoRandom();
-		}
-
+	if simple.IsRandom() {
+		simple.doRandom();
 	} else {
-		if bound.current == nil {
-			bound.current = bound.lowerBound
+		if simple.currentValue == nil {
+			simple.currentValue = simple.GetLowerBound()
 		} else {
-			bound.current = bound.doStep();
+			simple.doStep();
 		}
 
 
-		if  !bound.isBoundExceeded() {
-			result.RawValue = bound.current;
+		if  !simple.isBoundExceeded() {
+			result.RawValue = simple.currentValue;
 		} else {
-			if bound.IsCyclic() {
-				bound.Reset()
-				result = bound.NextValue();
+			if simple.IsCyclic() {
+				simple.Reset()
+				result = simple.NextValue();
 			} else {
 				result.BoundExceeded = true;
 				result.RawValue = nil
@@ -172,75 +170,82 @@ func (bound *bound) NextValue() (DataPair) {
 		if str ,ok := result.RawValue.(string); ok {
 			result.StringValue = str;
 		} else {
-			result.StringValue = fmt.Sprintf(bound.Formatting.format,result.RawValue)
+			if(simple.Format == "") {simple.Format = "%v"}
+			result.StringValue = fmt.Sprintf(simple.Format, result.RawValue)
 		}
 	}
 	return result;
 }
-type BoundInt64 struct{
-	bound
+
+func (simple *Simple) SetCyclic(value bool) *Simple {
+	simple.sequentialStep = value
+	return simple
+}
+
+func (simple *Simple) SetRandomType(value RandomType) *Simple {
+	simple.randomTypeValue = value
+	return simple
 }
 
 
-
-func (boundInt64 *BoundInt64) doStep() (interface{})  {
-	current := boundInt64.current.(int64);
-	step := boundInt64.step.(int64);
-	return current + step;
+type SimpleInt64 struct {
+	Simple
 }
 
-func (boundInt64 *BoundInt64) doRandom() (interface{})  {
-	lb := boundInt64.lowerBound.(int64)
-	ub := boundInt64.upperBound.(int64)
-
-	return lb + rand.Int63n(ub - lb)
+func (simpleInt64 *SimpleInt64) doStep()  {
+	current := simpleInt64.currentValue.(int64);
+	step := simpleInt64.sequentialStep.(int64);
+	simpleInt64.currentValue = current + step;
 }
 
-func (boundInt64 *BoundInt64) isBoundExceeded() (bool)  {
-	step := boundInt64.step.(int64)
-	upperBound := boundInt64.upperBound.(int64)
-	current := boundInt64.current.(int64)
+func (simpleInt64 *SimpleInt64) doRandom()   {
+	lb := simpleInt64.GetLowerBound().(int64)
+	ub := simpleInt64.GetUpperBound().(int64)
+	simpleInt64.currentValue = lb + rand.Int63n(ub - lb)
+}
+
+func (simpleInt64 *SimpleInt64) isBoundExceeded() (bool)  {
+	step := simpleInt64.sequentialStep.(int64)
+	upperBound := simpleInt64.GetUpperBound().(int64)
+	current := simpleInt64.currentValue.(int64)
 
 	return (step > 0 && current > upperBound ) ||
 		(step < 0 && current > upperBound);
 }
 
-func NewBoundInt64Sequential(lowerBound, upperBound, step, initial int64, cyclic bool) (error,*BoundInt64)  {
-	//TODO: check parameters
 
-	result := new(BoundInt64);
-	result.assignDefaultGetters();
-
-	result.lowerBound = lowerBound
-	result.upperBound = upperBound;
-	result.initial = initial;
-	result.step = step;
-	result.Formatting = NewFormatting("%v");
-	result.Nulling = NewNulling(0);
-	result.cyclic = cyclic;
-	result.RandomTypeValue = NONE
-
-	result.IsBoundExceeded = result.isBoundExceeded
-	result.DoStep = result.doStep
-	result.DoRandom = result.doRandom
-
-
-	return nil,result;
-
+func NewSimpleInt64() (*SimpleInt64)  {
+	result := new(SimpleInt64);
+	result.lowerBound = 1
+	result.upperBound = 10
+	result.initial = 1;
+	result.sequentialStep = 1;
+	result.randomTypeValue = NONE
+	result.isBoundExceededHandler = result.isBoundExceeded
+	result.doStepHandler = result.doStep
+	result.doRandomHandler = result.doRandom
+	return result;
 }
-/*
+func (simpleInt64 *SimpleInt64) SetLowerBound(value int64) *SimpleInt64 {
+	simpleInt64.lowerBound = value
+	return simpleInt64
+}
 
-func NewBoundInt64Random(lowerBound, upperBound int64, randomizing Randomizing) (error, *BoundInt64)  {
-	//TODO: check parameters
-	return &BoundInt64{
-		lowerBound : lowerBound,
-		upperBound : upperBound,
-		initial : nil,
-		step : nil,
-		Formatting : NewFormatting("%v"),
-		Nulling : NewNulling(0),
-		cyclic : false,
-		RandomTypeValue: randomizing.RandomTypeValue,
-	}
+func (simpleInt64 *SimpleInt64) SetUpperBound(value int64) *SimpleInt64 {
+	simpleInt64.upperBound = value
+	return simpleInt64
+}
 
-}*/
+func (simpleInt64 *SimpleInt64) SetInitial(value int64) *SimpleInt64 {
+	simpleInt64.initial = value
+	return simpleInt64
+}
+func (simpleInt64 *SimpleInt64) SetSequentialStep(value int64) *SimpleInt64 {
+	simpleInt64.sequentialStep = value
+	return simpleInt64
+}
+
+
+
+
+
