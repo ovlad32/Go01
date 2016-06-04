@@ -3,6 +3,7 @@ package SD
 import (
 	"math/rand"
 	"fmt"
+	"time"
 )
 
 type RandomType int
@@ -246,6 +247,125 @@ func (simpleInt64 *SimpleInt64) SetSequentialStep(value int64) *SimpleInt64 {
 }
 
 
+
+
+
+type SimpleFloat64 struct {
+	Simple
+}
+
+func (simpleFloat64 *SimpleFloat64) doStep()  {
+	current := simpleFloat64.currentValue.(float64);
+	step := simpleFloat64.sequentialStep.(float64);
+	simpleFloat64.currentValue = current + step;
+}
+
+func (simpleFloat64 *SimpleFloat64) doRandom()   {
+	lb := simpleFloat64.GetLowerBound().(float64)
+	ub := simpleFloat64.GetUpperBound().(float64)
+	simpleFloat64.currentValue = lb + rand.Float64()*(ub - lb)
+}
+
+func (simpleFloat64 *SimpleFloat64) isBoundExceeded() (bool)  {
+	step := simpleFloat64.sequentialStep.(float64)
+	upperBound := simpleFloat64.GetUpperBound().(float64)
+	current := simpleFloat64.currentValue.(float64)
+
+	return (step > 0 && current > upperBound ) ||
+	(step < 0 && current > upperBound);
+}
+
+
+func NewSimpleFloat64() (*SimpleFloat64)  {
+	result := new(SimpleFloat64);
+	result.lowerBound = 1.0
+	result.upperBound = 10.0
+	result.initial = 1.0;
+	result.sequentialStep = 1.0;
+	result.randomTypeValue = NONE
+	result.isBoundExceededHandler = result.isBoundExceeded
+	result.doStepHandler = result.doStep
+	result.doRandomHandler = result.doRandom
+	return result;
+}
+func (simpleFloat64 *SimpleFloat64) SetLowerBound(value float64) *SimpleFloat64 {
+	simpleFloat64.lowerBound = value
+	return simpleFloat64
+}
+
+func (simpleFloat64 *SimpleFloat64) SetUpperBound(value float64) *SimpleFloat64 {
+	simpleFloat64.upperBound = value
+	return simpleFloat64
+}
+
+func (simpleFloat64 *SimpleFloat64) SetInitial(value float64) *SimpleFloat64 {
+	simpleFloat64.initial = value
+	return simpleFloat64
+}
+func (simpleFloat64 *SimpleFloat64) SetSequentialStep(value float64) *SimpleFloat64 {
+	simpleFloat64.sequentialStep = value
+	return simpleFloat64
+}
+
+
+
+
+type SimpleTime struct {
+	Simple
+}
+
+func (simpleTime *SimpleTime) doStep()  {
+	current := simpleTime.currentValue.(time.Time);
+	step := simpleTime.sequentialStep.(time.Duration);
+	simpleTime.currentValue = current.Add(step);
+}
+
+func (simpleTime *SimpleTime) doRandom()   {
+	lb := simpleTime.GetLowerBound().(time.Time)
+	ub := simpleTime.GetUpperBound().(time.Time)
+	simpleTime.currentValue = lb.Add(time.Duration(rand.Int63n(int64(ub.Sub(lb)))))
+}
+
+func (simpleTime *SimpleTime) isBoundExceeded() (bool)  {
+	step := simpleTime.sequentialStep.(time.Duration)
+	upperBound := simpleTime.GetUpperBound().(time.Time)
+	current := simpleTime.currentValue.(time.Time)
+
+	return (step > 0 && current.After(upperBound) ) ||
+	(step < 0 && current.Before(upperBound));
+}
+
+
+func NewSimpleTime() (*SimpleTime)  {
+	result := new(SimpleTime);
+	result.lowerBound = time.Date(1900,01,01,00,00,00,00,time.UTC)
+	result.upperBound = time.Date(2099,12,31,23,59,59,99,time.UTC)
+	result.initial = time.Date(1900,01,01,00,00,00,00,time.UTC)
+	result.sequentialStep = time.Duration(time.Second)*60*60*24
+	result.randomTypeValue = NONE
+	result.isBoundExceededHandler = result.isBoundExceeded
+	result.doStepHandler = result.doStep
+	result.doRandomHandler = result.doRandom
+	return result;
+}
+func (simpleTime *SimpleTime) SetLowerBound(value time.Time) *SimpleTime {
+	simpleTime.lowerBound = value
+	return simpleTime
+}
+
+func (simpleTime *SimpleTime) SetUpperBound(value time.Time) *SimpleTime {
+	simpleTime.upperBound = value
+	return simpleTime
+}
+
+func (simpleTime *SimpleTime) SetInitial(value time.Time) *SimpleTime {
+	simpleTime.initial = value
+	return simpleTime
+}
+func (simpleTime *SimpleTime) SetSequentialStep(value time.Time) *SimpleTime {
+	simpleTime.sequentialStep = value
+	return simpleTime
+}
 
 
 
