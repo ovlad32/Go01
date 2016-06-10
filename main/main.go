@@ -9,5 +9,5 @@ import ("fmt"
 func main() {
 	fmt.Print("Go!")
 	//sd.Start();
-	sd.Sd1();
+	sd.Sd3();
 }

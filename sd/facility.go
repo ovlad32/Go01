@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"log"
 
-	_ "fmt"
 	"fmt"
+	"os"
 )
 
 var Db *sql.DB;
@@ -31,6 +31,16 @@ func Sd2() {
 	bb.overFunc = bb.Over;
 	bb.Call();
 
+}
+func Sd3 (){
+	file,err := os.OpenFile("text.txt",os.O_CREATE|os.O_WRONLY,0600)
+	if err != nil {
+		panic(err);
+	}
+	defer file.Close();
+	for i:=0;i<1000000; i++ {
+		file.WriteString("%");
+	}
 }
 
 type A struct {
