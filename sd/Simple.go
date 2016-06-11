@@ -2,7 +2,6 @@ package SD
 
 import (
 	"math/rand"
-	"fmt"
 	"time"
 )
 

@@ -3,17 +3,21 @@ package SD
 type OneOf struct {
 	Presentation
 	pool *[]interface{}
-	dispatcher Simple
+	dispatcher *SimpleInt64
 }
 
-func NewOneOf(pool *[]interface{}) OneOf {
+func NewOneOf(pool *[]interface{}) *OneOf {
 	oneOf := new(OneOf)
 	oneOf.pool = pool;
-	oneOf.dispatcher.getLowerBoundFunc = func() {
-		return 0;
+	oneOf.dispatcher = NewSimpleInt64().
+				SetInitial(0).
+				SetSequentialStep(1)
+	oneOf.dispatcher.Format=""
+	oneOf.dispatcher.getLowerBoundFunc = func()  (interface{}) {
+		return 0
 	}
-	oneOf.dispatcher.getUpperBoundFunc = func() {
-		return len(&oneOf.pool)
+	oneOf.dispatcher.getUpperBoundFunc = func() (interface{}) {
+		return len(*(oneOf.pool))
 	}
 	return  oneOf
 }
@@ -27,7 +31,17 @@ func (oneOf *OneOf) SetRandom(randomType RandomType) *OneOf {
 	return oneOf
 }
 func(oneOf *OneOf) NextValue() (*DataPair) {
-	index := oneOf.dispatcher.NextValue().RawValue.(int64);
-	result := newDataPair(oneOf.pool[index],oneOf.Presentation);
-	return result;
+	if oneOf.dispatcher.Format != "" {
+		panic("Internal index producer has to have empty .Format!")
+	}
+	internal := oneOf.dispatcher.NextValue();
+	if internal.BoundExceeded {
+		internal.RawValue = nil
+		internal.StringValue = ""
+		return internal;
+	} else {
+		index := internal.RawValue.(int64);
+		result := newDataPair((*oneOf.pool)[index], oneOf.Presentation);
+		return result;
+	}
 }

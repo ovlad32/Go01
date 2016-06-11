@@ -43,14 +43,8 @@ func newDataPair(rawValue interface{}, presentation Presentation) (*DataPair) {
 	result.RawValue = rawValue;
 	if str ,ok := result.RawValue.(string); ok {
 		result.StringValue = str;
-	} else {
-		var format string
-		if (presentation == nil || presentation.Format == "") {
-			format = "%v"
-		} else {
-			format = presentation.Format
-		}
-		result.StringValue = format
+	} else if presentation.Format != "" {
+		result.StringValue = fmt.Sprintf(presentation.Format,rawValue)
 	}
 	return result;
 }
