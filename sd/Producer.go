@@ -14,7 +14,7 @@ const (
 
 type DataPair struct{
 	RawValue interface{}
-	StringValue string
+	stringValue string
 	BoundExceeded bool
 }
 
@@ -42,9 +42,18 @@ func newDataPair(rawValue interface{}, presentation Presentation) (*DataPair) {
 	result := new(DataPair)
 	result.RawValue = rawValue;
 	if str ,ok := result.RawValue.(string); ok {
-		result.StringValue = str;
+		result.stringValue = str;
 	} else if presentation.Format != "" {
-		result.StringValue = fmt.Sprintf(presentation.Format,rawValue)
+		result.stringValue = fmt.Sprintf(presentation.Format,rawValue)
 	}
 	return result;
+}
+func NewBoundExceeded() (*DataPair) {
+	result := new(DataPair)
+	result.BoundExceeded = true;
+	return result
+}
+
+func (dataPair *DataPair) String()  string {
+	return dataPair.stringValue;
 }

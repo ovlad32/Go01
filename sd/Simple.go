@@ -101,9 +101,7 @@ func (simple *Simple) NextValue() (*DataPair) {
 				simple.Reset()
 				result = simple.NextValue();
 			} else {
-				result = new(DataPair);
-				result.BoundExceeded = true;
-				result.RawValue = nil
+				result = NewBoundExceeded();
 			}
 		}
 	}
