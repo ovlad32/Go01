@@ -77,40 +77,24 @@ func (simple Simple) GetUpperBound() interface {} {
 	}
 }
 
+func(simple *Simple) initializeCurrentValue() {
+	simple.currentValue = simple.GetLowerBound()
+}
+func (simple *Simple) setCurrentValue( value interface{}) {
+	simple.currentValue = value
+}
+
+func (simple *Simple) GetCurrentValue() (interface{}) {
+	return simple.currentValue
+}
+
+
 
 func (simple *Simple) NextValue() (*DataPair) {
-	var result *DataPair;
-	if simple.IsRandom() {
-		simple.doRandom();
-		result = newDataPair(
-				simple.currentValue,
-			).SetPresentation(
-				simple.Presentation,
-			)
-	} else {
-		if simple.currentValue == nil {
-			simple.currentValue = simple.GetLowerBound()
-		} else {
-			simple.doStep();
-		}
-
-
-		if  !simple.isBoundExceeded() {
-			result = newDataPair(
-					simple.currentValue,
-				).SetPresentation(
-					simple.Presentation,
-				)
-		} else {
-			if simple.IsCyclic() {
-				simple.Reset()
-				result = simple.NextValue();
-			} else {
-				result = NewBoundExceeded();
-			}
-		}
-	}
-	return result;
+	return nextValue(simple);
+}
+func (simple Simple) getNullProbability() int {
+	return simple.NullProbability
 }
 
 func (simple *Simple) SetCyclic(value bool) *Simple {

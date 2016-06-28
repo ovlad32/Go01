@@ -1,6 +1,9 @@
 package SD
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type RandomType int
 
@@ -23,12 +26,16 @@ type DataPair struct{
 type Producer interface {
 	Reset()
 	NextValue() (*DataPair)
-	CurrentValue(*DataPair)
+	GetCurrentValue() (*DataPair)
+	setCurrentValue(*DataPair)
 	IsCyclic() (bool)
 	IsRandom() (bool)
+	initializeCurrentValue()
 	doStep() (interface{})
 	doRandom() (interface{})
-	isBoundExceeded (bool)
+	isBoundExceeded() (bool)
+	getPresentation() (Presentation)
+	getNullProbability() int
 }
 
 type Presentation struct{
@@ -76,3 +83,60 @@ func (dataPair *DataPair) String()  string {
 	return dataPair.stringValue;
 }
 
+func getNullOccurance(nullProbability int8) bool {
+	if !(nullProbability>=0 && nullProbability<=100) {
+		panic("Null probability is out of range "+nullProbability+". Has to be in range 0..100!")
+	}
+	if nullProbability == 0 {
+		return false;
+	} else if nullProbability == 100 {
+		return true;
+	} else if level := rand.Int31n(100); level < nullProbability {
+		return true;
+	}
+	return true
+}
+
+func nextValue(prod Producer) (*DataPair) {
+	var result *DataPair;
+	var makeValue bool
+
+	makeValue = getNullOccurance(prod.getNullProbability())
+
+	if prod.IsRandom() {
+		if makeValue {
+			prod.doRandom()
+		} else {
+			prod.setCurrentValue(nil)
+		}
+		result = newDataPair(
+			prod.GetCurrentValue(),
+		).SetPresentation(
+			prod.getPresentation(),
+		)
+	} else {
+		if prod.GetCurrentValue() == nil {
+			prod.initializeCurrentValue()
+		} else {
+			prod.doStep();
+		}
+		if  !prod.isBoundExceeded() {
+			if !makeValue {
+				prod.setCurrentValue(nil)
+			}
+			result = newDataPair(
+				prod.GetCurrentValue(),
+			).SetPresentation(
+				prod.getPresentation(),
+			)
+		} else {
+			if prod.IsCyclic() {
+				prod.Reset()
+				result = prod.NextValue();
+			} else {
+				result = NewBoundExceeded();
+			}
+		}
+	}
+	return result;
+}
