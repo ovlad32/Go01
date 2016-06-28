@@ -37,11 +37,15 @@ func(oneOf *OneOf) NextValue() (*DataPair) {
 	internal := oneOf.dispatcher.NextValue();
 	if internal.BoundExceeded {
 		internal.RawValue = nil
-		internal.StringValue = ""
+		internal.stringValue = ""
 		return internal;
 	} else {
 		index := internal.RawValue.(int64);
-		result := newDataPair((*oneOf.pool)[index], oneOf.Presentation);
+		result := newDataPair(
+				(*oneOf.pool)[index],
+			).SetPresentation(
+				oneOf.Presentation,
+			)
 		return result;
 	}
 }

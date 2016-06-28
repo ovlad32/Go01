@@ -2,6 +2,7 @@ package SD
 
 type Multibit struct {
 	Presentation
+	NullProbability  int8
 	bits[] *Producer
 	temp[] *DataPair
 	current[] *DataPair
@@ -37,19 +38,20 @@ func(multibit Multibit) IsCyclic() (bool) {
 	return result;
 }
 func(multibit *Multibit) NextValue() (result DataPair) {
-
+  return DataPair{};
 }
+
 func(multibit *Multibit) getBitValue(index int) (result[] *DataPair) {
 	var bitLen int = len(multibit.bits)
 
 	 if index == -1 {
 		 if multibit.temp == nil {
-			 multibit.temp = make([]DataPair, bitLen)
+			 multibit.temp = make([]*DataPair, bitLen)
 			 multibit.temp[0] = NewBoundExceeded()
 		 }
 	 } else {
 		 if multibit.temp == nil {
-			 multibit.temp = make([]DataPair, bitLen )
+			 multibit.temp = make([]*DataPair, bitLen )
 
 			for bitIndex, _ := range multibit.bits {
 				reverseIndex := bitLen - 1 - bitIndex;

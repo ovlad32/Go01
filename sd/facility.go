@@ -17,12 +17,32 @@ func DbInit(){
 	}
 }
 
+
 func  Sd1()  {
 	prod := NewSimpleTime()
 	dataPair := prod.NextValue();
-	fmt.Println(dataPair.StringValue);
+	fmt.Println(dataPair.stringValue);
 	dataPair = prod.NextValue();
-	fmt.Println(dataPair.StringValue);
+	fmt.Println(dataPair.stringValue);
+
+	ora := Server{
+		name:"ora244",
+	}
+	table1 := Table{
+		server:&ora,
+		owner:"HR",
+		name:"TEST",
+	}
+	col1 := Column{
+		name:"id",
+		datatype:INTEGER,
+	}
+	col2:= Column{
+		name:"txt",
+		datatype:VARCHAR,
+		length:50,
+	}
+	table1.columns = []Column{col1, col2};
 }
 
 

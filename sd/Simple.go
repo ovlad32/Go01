@@ -6,7 +6,7 @@ import (
 )
 
 type Simple struct {
-	Presentation
+
 	lowerBound interface{}
 	upperBound interface{}
 	initial interface{}
@@ -15,6 +15,9 @@ type Simple struct {
 	currentValue interface{}
 	cyclic bool
 	//
+	NullProbability  int8
+	Presentation
+
 	doStepHandler func()
 	doRandomHandler func()
 	isBoundExceededHandler func() bool
@@ -80,9 +83,10 @@ func (simple *Simple) NextValue() (*DataPair) {
 	if simple.IsRandom() {
 		simple.doRandom();
 		result = newDataPair(
-			simple.currentValue,
-			simple.Presentation,
-		)
+				simple.currentValue,
+			).SetPresentation(
+				simple.Presentation,
+			)
 	} else {
 		if simple.currentValue == nil {
 			simple.currentValue = simple.GetLowerBound()
@@ -94,8 +98,9 @@ func (simple *Simple) NextValue() (*DataPair) {
 		if  !simple.isBoundExceeded() {
 			result = newDataPair(
 					simple.currentValue,
+				).SetPresentation(
 					simple.Presentation,
-			)
+				)
 		} else {
 			if simple.IsCyclic() {
 				simple.Reset()

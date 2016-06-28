@@ -13,6 +13,8 @@ const (
 
 
 type DataPair struct{
+	Presentation
+	formatted bool
 	RawValue interface{}
 	stringValue string
 	BoundExceeded bool
@@ -20,8 +22,8 @@ type DataPair struct{
 
 type Producer interface {
 	Reset()
-	NextValue() (DataPair)
-	CurrentValue(DataPair)
+	NextValue() (*DataPair)
+	CurrentValue(*DataPair)
 	IsCyclic() (bool)
 	IsRandom() (bool)
 	doStep() (interface{})
@@ -30,30 +32,47 @@ type Producer interface {
 }
 
 type Presentation struct{
-	NullProbability  int8
 	NullPresentation string
 	Format string
 }
 
-func newDataPair(rawValue interface{}, presentation Presentation) (*DataPair) {
-	if rawValue == nil {
+func newDataPair(rawValue interface{}) (*DataPair) {
+	/*if rawValue == nil {
 		panic("Raw Value is not defined")
-	}
+	}*/
 	result := new(DataPair)
 	result.RawValue = rawValue;
-	if str ,ok := result.RawValue.(string); ok {
-		result.stringValue = str;
-	} else if presentation.Format != "" {
-		result.stringValue = fmt.Sprintf(presentation.Format,rawValue)
-	}
 	return result;
 }
+
 func NewBoundExceeded() (*DataPair) {
 	result := new(DataPair)
 	result.BoundExceeded = true;
 	return result
 }
 
+func(dataPair *DataPair) SetPresentation(presentation Presentation) (*DataPair){
+	dataPair.Presentation.Format = presentation.Format
+	dataPair.NullPresentation = presentation.NullPresentation
+	return dataPair;
+}
+
 func (dataPair *DataPair) String()  string {
+	if !dataPair.formatted {
+		if sValue ,ok := dataPair.RawValue.(string); ok {
+			dataPair.stringValue = sValue;
+		} else if dataPair.Format != "" {
+			if dataPair.RawValue == nil {
+				dataPair.stringValue = dataPair.NullPresentation
+			} else {
+				dataPair.stringValue = fmt.Sprintf(
+					dataPair.Format,
+					dataPair.RawValue,
+				)
+			}
+		}
+		dataPair.formatted = true;
+	}
 	return dataPair.stringValue;
 }
+

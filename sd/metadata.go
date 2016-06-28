@@ -45,11 +45,11 @@ type Constraint struct {
 	owner             string
 	tableName         string
 	cType             ConstraintType
-	columns           *[]Column
+	columns[]         *Column
 	refOwner          string
 	refConstraintName string
 	refTableName      string
-	refColumns        *[]Column
+	refColumns[]       *Column
 	checkExpression   string
 }
 
@@ -57,9 +57,9 @@ type Table struct {
 	owner   string
 	name    string
 	server  *Server
-	columns []*Column
-	keys    []*Constraint
-	refKeys []*Constraint
+	columns[] Column
+	keys[] Constraint
+	refKeys[] *Constraint
 }
 type ServerCredential struct{
 	login    string
