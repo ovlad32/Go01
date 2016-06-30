@@ -21,9 +21,9 @@ func DbInit(){
 func  Sd1()  {
 	prod := NewSimpleTime()
 	dataPair := prod.NextValue();
-	fmt.Println(dataPair.stringValue);
+	fmt.Println(dataPair.String());
 	dataPair = prod.NextValue();
-	fmt.Println(dataPair.stringValue);
+	fmt.Println(dataPair.String());
 
 	ora := Server{
 		name:"ora244",

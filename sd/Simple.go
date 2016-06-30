@@ -84,7 +84,7 @@ func (simple *Simple) setCurrentValue( value interface{}) {
 	simple.currentValue = value
 }
 
-func (simple *Simple) GetCurrentValue() (interface{}) {
+func (simple *Simple) GetCurrentValue() ( interface{}) {
 	return simple.currentValue
 }
 
@@ -93,8 +93,11 @@ func (simple *Simple) GetCurrentValue() (interface{}) {
 func (simple *Simple) NextValue() (*DataPair) {
 	return nextValue(simple);
 }
-func (simple Simple) getNullProbability() int {
+func (simple Simple) getNullProbability() int8 {
 	return simple.NullProbability
+}
+func (simple Simple) getPresentation() (Presentation) {
+	return simple.Presentation
 }
 
 func (simple *Simple) SetCyclic(value bool) *Simple {
@@ -136,11 +139,13 @@ func (simpleInt64 *SimpleInt64) isBoundExceeded() (bool)  {
 
 func NewSimpleInt64() (*SimpleInt64)  {
 	result := new(SimpleInt64);
+	result.currentValue = nil
 	result.lowerBound = 1
 	result.upperBound = 10
 	result.initial = 1;
 	result.sequentialStep = 1;
 	result.randomTypeValue = NONE
+	result.Format="%v"
 	result.isBoundExceededHandler = result.isBoundExceeded
 	result.doStepHandler = result.doStep
 	result.doRandomHandler = result.doRandom
@@ -164,9 +169,6 @@ func (simpleInt64 *SimpleInt64) SetSequentialStep(value int64) *SimpleInt64 {
 	simpleInt64.sequentialStep = value
 	return simpleInt64
 }
-
-
-
 
 
 type SimpleFloat64 struct {
@@ -197,10 +199,12 @@ func (simpleFloat64 *SimpleFloat64) isBoundExceeded() (bool)  {
 
 func NewSimpleFloat64() (*SimpleFloat64)  {
 	result := new(SimpleFloat64);
+	result.currentValue = nil
 	result.lowerBound = 1.0
 	result.upperBound = 10.0
 	result.initial = 1.0;
 	result.sequentialStep = 1.0;
+	result.Format="%v"
 	result.randomTypeValue = NONE
 	result.isBoundExceededHandler = result.isBoundExceeded
 	result.doStepHandler = result.doStep
@@ -257,6 +261,7 @@ func (simpleTime *SimpleTime) isBoundExceeded() (bool)  {
 
 func NewSimpleTime() (*SimpleTime)  {
 	result := new(SimpleTime);
+	result.currentValue = nil
 	result.lowerBound = time.Date(1900,01,01,00,00,00,00,time.UTC)
 	result.upperBound = time.Date(2099,12,31,23,59,59,99,time.UTC)
 	result.initial = time.Date(1900,01,01,00,00,00,00,time.UTC)
@@ -265,6 +270,7 @@ func NewSimpleTime() (*SimpleTime)  {
 	result.isBoundExceededHandler = result.isBoundExceeded
 	result.doStepHandler = result.doStep
 	result.doRandomHandler = result.doRandom
+	result.Format="%v"
 	return result;
 }
 func (simpleTime *SimpleTime) SetLowerBound(value time.Time) *SimpleTime {

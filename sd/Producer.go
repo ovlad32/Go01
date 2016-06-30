@@ -26,16 +26,16 @@ type DataPair struct{
 type Producer interface {
 	Reset()
 	NextValue() (*DataPair)
-	GetCurrentValue() (*DataPair)
-	setCurrentValue(*DataPair)
+	GetCurrentValue() (interface{})
+	setCurrentValue( interface{})
 	IsCyclic() (bool)
 	IsRandom() (bool)
 	initializeCurrentValue()
-	doStep() (interface{})
-	doRandom() (interface{})
+	doStep()
+	doRandom()
 	isBoundExceeded() (bool)
 	getPresentation() (Presentation)
-	getNullProbability() int
+	getNullProbability() int8
 }
 
 type Presentation struct{
@@ -85,13 +85,13 @@ func (dataPair *DataPair) String()  string {
 
 func getNullOccurance(nullProbability int8) bool {
 	if !(nullProbability>=0 && nullProbability<=100) {
-		panic("Null probability is out of range "+nullProbability+". Has to be in range 0..100!")
+		panic(fmt.Sprintf("Null probability is out of range %v. Has to be in range 0..100!",nullProbability));
 	}
 	if nullProbability == 0 {
 		return false;
 	} else if nullProbability == 100 {
 		return true;
-	} else if level := rand.Int31n(100); level < nullProbability {
+	} else if level := int8(rand.Int31n(100)); level < nullProbability {
 		return true;
 	}
 	return true
@@ -101,7 +101,7 @@ func nextValue(prod Producer) (*DataPair) {
 	var result *DataPair;
 	var makeValue bool
 
-	makeValue = getNullOccurance(prod.getNullProbability())
+	makeValue = !getNullOccurance(prod.getNullProbability())
 
 	if prod.IsRandom() {
 		if makeValue {
